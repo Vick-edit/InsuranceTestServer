@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ServiceCore.DataAccess.SettingsEF;
 using ServiceCore.Domain.Models;
 using WebApiService.Authorization;
+using WebApiService.Filters;
 
 namespace WebApiService.EndPoints.Products
 {
@@ -23,7 +24,7 @@ namespace WebApiService.EndPoints.Products
             _dbContextFactory = dbContextFactory;
         }
 
-
+        [Authorize, UserOddId]
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> Get(long id)
         {

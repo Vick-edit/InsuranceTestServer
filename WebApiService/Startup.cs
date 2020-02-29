@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -7,13 +8,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using ServiceCore.DataAccess.SettingsEF;
 using ServiceCore.Settings;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
+using WebApiService.Authorization;
 using WebApiService.Extensions;
-using WebApiService.Middlewares.ExceptionWrapperMiddleware;
+using WebApiService.Filters;
+using WebApiService.Middlewares;
 using WebApiService.SchedulingServices;
 using WebApiService.SchedulingServices.ServiceJobs;
 using WebApiService.Settings;
@@ -40,7 +44,12 @@ namespace WebApiService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(opt => opt.UseAttributeRoutePrefix(AppConstants.ROUT_PREFIX))
+            services
+                .AddControllers(opt =>
+                {
+                    opt.UseAttributeRoutePrefix(AppConstants.ROUT_PREFIX);
+                    opt.Filters.Add<WrapJsonResponse>();
+                })
                 .AddNewtonsoftJson(options =>
                 {
                     var settings = options.SerializerSettings;
@@ -50,7 +59,18 @@ namespace WebApiService
                         settings.Formatting = Formatting.Indented;
                 });
 
-            services.AddAuthentication();
+            services.AddAuthentication(AppConstants.AUTHORIZATION_SCHEME)
+                .AddScheme<UserIdAuthorizationOptions, UserIdAuthorizationHandler>(AppConstants.AUTHORIZATION_SCHEME,
+                    configureOptions =>
+                    {
+                        configureOptions.MinValue = 1;
+                        configureOptions.MaxValue = long.MaxValue;
+
+                        configureOptions.AuthHeaderName = "Authorization";
+                        configureOptions.AuthHeaderScheme = "ClientId";
+                    });
+            services.AddAuthorization();
+            services.AddSingleton<IPostConfigureOptions<UserIdAuthorizationOptions>, UserIdAuthorizationPostConfigureOptions>();
 
             services.AddSimpleInjector(_container, options =>
             {
@@ -61,9 +81,12 @@ namespace WebApiService
                 // non-generic Microsoft.Extensions.Logging.ILogger
                 options.AddLogging();
 
-                options.AddHostedService<TimedHostedService<WriteToLogMessageJob>>();
-                options.Container.RegisterInstance(new TimedHostedService<WriteToLogMessageJob>
-                    .Settings(interval: TimeSpan.FromSeconds(15)));
+                if (CurrentEnvironment.IsDevelopment())
+                {
+                    options.AddHostedService<TimedHostedService<WriteToLogMessageJob>>();
+                    options.Container.RegisterInstance(new TimedHostedService<WriteToLogMessageJob>
+                        .Settings(interval: TimeSpan.FromSeconds(15)));
+                }
             });
 
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -81,11 +104,8 @@ namespace WebApiService
             MigrateDataBase(_container, env, logger);
 
             // Важно, что порядок регистрации влияет на порядок вложенности компонентов
-            // Это значит, что следующие два компонента будут вызваны одни из самых первых и смогут обернуть любую ошибку
-            if (env.IsDevelopment())
-                app.UseMiddleware<TestExceptionMiddleware>(_container);
-            else
-                app.UseMiddleware<ExceptionMiddleware>(_container);
+            // Это значит, что ExceptionMiddleware будeт вызваны одни из самых первых и сможет обернуть любую ошибку
+            app.UseMiddleware<ExceptionMiddleware>(_container);
 
             app.UseRouting();
             app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -99,7 +119,7 @@ namespace WebApiService
             {
                 endpoints.MapControllerRoute(
                     "API Default",
-                    $"{AppConstants.ROUT_PREFIX}/{{controller}}/{{id?}}",
+                    $"{AppConstants.ROUT_PREFIX}/{{controller}}/{{action?}}/{{id?}}",
                     new { controller = "Health"}
                 );
             });

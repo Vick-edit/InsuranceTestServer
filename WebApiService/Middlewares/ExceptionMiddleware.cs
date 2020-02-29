@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Net;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using WebApiService.DTOs;
 
-namespace WebApiService.Middlewares.ExceptionWrapperMiddleware
+namespace WebApiService.Middlewares
 {
     /// <summary>
     ///     Middleware для оборачивания ошибок работы сервера в стандартизированный Json
@@ -29,6 +30,9 @@ namespace WebApiService.Middlewares.ExceptionWrapperMiddleware
             }
             catch (Exception ex)
             {
+                if (httpContext.Response.HasStarted)
+                    throw;
+
                 LogException(httpContext, ex);
                 await HandleExceptionAsync(httpContext, ex);
             }
@@ -36,11 +40,11 @@ namespace WebApiService.Middlewares.ExceptionWrapperMiddleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.ContentType = MediaTypeNames.Application.Json;
+            context.Response.StatusCode = 200;
 
-            var errorDescription = GetErrorDescription(context, exception);
-            var serializedErrorInfo = JsonConvert.SerializeObject(errorDescription);
+            var responseBody = new ServiceResponseDto(exception);
+            var serializedErrorInfo = JsonConvert.SerializeObject(responseBody);
             await context.Response.WriteAsync(serializedErrorInfo);
         }
 
@@ -48,12 +52,6 @@ namespace WebApiService.Middlewares.ExceptionWrapperMiddleware
         {
             using (Logger.BeginScope($"Request id - {context.TraceIdentifier} error  logging:"))
                 Logger.LogError($"Something went wrong: {exception}");
-        }
-
-        protected virtual HttpErrorDescription GetErrorDescription(HttpContext context, Exception exception)
-        {
-            var errorDescription = new HttpErrorDescription(context, exception);
-            return errorDescription;
         }
     }
 }
