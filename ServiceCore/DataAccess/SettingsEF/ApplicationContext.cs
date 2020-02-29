@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ServiceCore.DataAccess.Mapping;
+using ServiceCore.Domain.Models;
 
 namespace ServiceCore.DataAccess.SettingsEF
 {
     public class ApplicationContext : BaseDbContext, IDbContext
     {
-        private static readonly object FluentSettingsLock = new object();
-        private static bool _isDapperMapInitialized;
-
         private readonly IConfiguration _configuration;
         private readonly string _dtConnectionString; //Строка соединения для использования с миграцией
 
@@ -41,7 +41,7 @@ namespace ServiceCore.DataAccess.SettingsEF
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            ProductMap.Register(modelBuilder);
         }
 
 
@@ -62,13 +62,14 @@ namespace ServiceCore.DataAccess.SettingsEF
         /// <inheritdoc />
         public override void Seed()
         {
-            var isSeedNeeded = false;
-            if(!isSeedNeeded)
+            // проверять все таблицы, что они пустые муторно, если таблица продуктов пустая, значит, скорее всего нужно выполнить внедрение данных
+            var isSeedNeeded = !Set<Product>().Any();
+            if (!isSeedNeeded)
                 return;
 
             // открываем транзакцию, чтобы коммитить все изменения разом
             BeginTransaction();
-            Flush();
+            Set<Product>().AddRange(SeedData.TestProducts);
             Commit();
         }
     }

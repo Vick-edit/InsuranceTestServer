@@ -25,15 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="FilmsDB.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="DataAccess\Entities\" />
-    <Folder Include="DataAccess\Mapping\" />
-    <Folder Include="Domain\Models\Entities\" />
   </ItemGroup>
 
 </Project>
