@@ -99,8 +99,8 @@ namespace WebApiService
             {
                 endpoints.MapControllerRoute(
                     "API Default",
-                    $"{AppConstants.ROUT_PREFIX}/{{controller}}/{{action}}",
-                    new { controller = "Health", action = "Get" }
+                    $"{AppConstants.ROUT_PREFIX}/{{controller}}/{{id?}}",
+                    new { controller = "Health"}
                 );
             });
         }

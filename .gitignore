@@ -481,3 +481,6 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/aspnetcore,visualstudio
+
+# Custom ignores
+/WebApiService/InsuranceDB.db
