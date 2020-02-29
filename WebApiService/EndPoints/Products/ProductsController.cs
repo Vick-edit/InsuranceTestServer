@@ -1,15 +1,17 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceCore.DataAccess.SettingsEF;
 using ServiceCore.Domain.Models;
+using WebApiService.Authorization;
 
 namespace WebApiService.EndPoints.Products
 {
     /// <summary>
     ///     Контроллер доступа к данным продуктов
     /// </summary>
-    [Route("{controller}/{id?}")]
+    [Route("{controller}")]
     [ApiController]
     public class ProductsController : ControllerBase
     {
@@ -22,8 +24,8 @@ namespace WebApiService.EndPoints.Products
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> Get(long id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> Get(long id)
         {
             using (var dbContext = _dbContextFactory.GetApplicationContext())
             {
@@ -31,7 +33,7 @@ namespace WebApiService.EndPoints.Products
                     .Set<Product>()
                     .FirstOrDefaultAsync(p => p.Id == id);
 
-                return Ok(product);
+                return product;
             }
         }
     }

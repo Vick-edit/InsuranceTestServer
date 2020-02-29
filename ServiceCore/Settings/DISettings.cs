@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
 using ServiceCore.DataAccess.SettingsEF;
+using ServiceCore.Services.Validations;
 using SimpleInjector;
 
 namespace ServiceCore.Settings
@@ -18,6 +18,9 @@ namespace ServiceCore.Settings
         public static void RegisterDependencies(Container container)
         {
             container.Register<IDbContextFactory, DbContextFactory>();
+
+            container.Collection.Register(typeof(INameValidator));
+            container.Collection.Register(typeof(IDescriptionValidator));
 
             lock (ContainerLock)
             {

@@ -12,6 +12,15 @@ namespace ServiceCore.DataAccess.Mapping
     {
         public static void Register(ModelBuilder modelBuilder)
         {
+            // SQLITE не поддерживает последовательности
+            /*
+            modelBuilder.HasSequence<int>("ProductId_seq", schema: "Insurance")
+                .StartsAt(1)
+                .IncrementsBy(1)
+                .HasMax(long.MaxValue)
+                .IsCyclic(false);
+            */
+
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.ToTable("Product", "Insurance");
@@ -20,6 +29,7 @@ namespace ServiceCore.DataAccess.Mapping
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
+                    //.HasDefaultValueSql("NEXT VALUE FOR Insurance.ProductId_seq") // SQLITE не поддерживает последовательности
                     .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name)

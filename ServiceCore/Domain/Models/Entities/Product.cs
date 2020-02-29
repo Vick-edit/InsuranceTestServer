@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
+using ServiceCore.Settings;
 
 namespace ServiceCore.Domain.Models
 {
@@ -15,11 +16,11 @@ namespace ServiceCore.Domain.Models
         public long Id { get; set; }
 
         [Required]
-        [StringLength(200)]
+        [StringLength(AppCoreConstants.MAX_PRODUCT_NAME_LENGTH)]
         [JsonProperty("name", Order = 2)]
         public string Name { get; set; }
 
-        [StringLength(500)]
+        [StringLength(AppCoreConstants.MAX_PRODUCT_DESCRIPTION_LENGTH)]
         [JsonProperty("description", Order = 3)]
         public string Description { get; set; }
     }
