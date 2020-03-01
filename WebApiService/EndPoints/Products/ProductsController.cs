@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceCore.DataAccess.SettingsEF;
 using ServiceCore.Domain.Models;
-using WebApiService.Authorization;
 using WebApiService.Filters;
 
 namespace WebApiService.EndPoints.Products
@@ -24,7 +23,6 @@ namespace WebApiService.EndPoints.Products
             _dbContextFactory = dbContextFactory;
         }
 
-        [Authorize, UserOddId]
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> Get(long id)
         {
@@ -34,7 +32,26 @@ namespace WebApiService.EndPoints.Products
                     .Set<Product>()
                     .FirstOrDefaultAsync(p => p.Id == id);
 
+                if (product == null)
+                    return NotFound();
                 return product;
+            }
+        }
+
+       
+        [Authorize, UserOddId]
+        [HttpPost]
+        public async Task<ActionResult<Product>> Post([FromBody]ProductInputViewModel inputProductViewModel)
+        {
+            using (var dbContext = _dbContextFactory.GetApplicationContext())
+            {
+                var newProduct = inputProductViewModel.GetCopyToInsert();
+                await dbContext
+                    .Set<Product>()
+                    .AddAsync(newProduct);
+                dbContext.Commit();
+
+                return newProduct;
             }
         }
     }

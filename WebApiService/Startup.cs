@@ -15,6 +15,7 @@ using ServiceCore.Settings;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
 using WebApiService.Authorization;
+using WebApiService.EndPoints.Products;
 using WebApiService.Extensions;
 using WebApiService.Filters;
 using WebApiService.Middlewares;
@@ -47,6 +48,7 @@ namespace WebApiService
             services
                 .AddControllers(opt =>
                 {
+                    opt.InputFormatters.Insert(0, new ProductTextFormatter());
                     opt.UseAttributeRoutePrefix(AppConstants.ROUT_PREFIX);
                     opt.Filters.Add<WrapJsonResponse>();
                 })

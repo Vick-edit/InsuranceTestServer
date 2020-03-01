@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -24,13 +26,37 @@ namespace WebApiService.Filters
             }
 
             var realResultData = contextResult.Value;
-            var responseDto = new ServiceResponseDto(realResultData, realStatusCode);
+            var responseDto = realResultData is ProblemDetails resultAsProblem 
+                ? new ServiceResponseDto(resultAsProblem.Status.GetValueOrDefault(), GetProblemDescription(resultAsProblem)) 
+                : new ServiceResponseDto(realResultData, realStatusCode);
 
-            contextResult.StatusCode = 200;
+            contextResult.StatusCode = (int)HttpStatusCode.OK;;
             contextResult.Value = responseDto;
             contextResult.DeclaredType = typeof(ServiceResponseDto);
 
             await next();
+        }
+
+        private string GetProblemDescription(ProblemDetails problemDetails)
+        {
+            if (!string.IsNullOrWhiteSpace(problemDetails.Detail))
+            {
+                return problemDetails.Detail;
+            }
+
+            if (problemDetails is ValidationProblemDetails validationProblemDetails)
+            {
+                var allErrors= validationProblemDetails.Errors
+                    .SelectMany(kv => kv.Value)
+                    .ToArray();
+
+                var allErrorsText = string.Join("; ", allErrors);
+                if (!string.IsNullOrWhiteSpace(allErrorsText))
+                    return allErrorsText;
+
+            }
+
+            return problemDetails.Title;
         }
     }
 }

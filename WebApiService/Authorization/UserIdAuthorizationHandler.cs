@@ -68,7 +68,7 @@ namespace WebApiService.Authorization
             var originalStatusCode = Context.Response.StatusCode;
             var originalStatusMsg = ((HttpStatusCode)originalStatusCode).ToString();
             Context.Response.ContentType = MediaTypeNames.Application.Json;
-            Context.Response.StatusCode = 200;
+            Context.Response.StatusCode = (int)HttpStatusCode.OK;
 
             var responseBody = new ServiceResponseDto(originalStatusCode, originalStatusMsg);
             var serializedResponseDto = JsonConvert.SerializeObject(responseBody);
