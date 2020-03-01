@@ -48,7 +48,7 @@ public interface IDescriptionValidator
 Ответ сервиса всегда должен быть в виде json, с кодом 200:
 
 200 OK
-```json
+```
 {
 	"statusCode": int, 		// реальный http код ответа, обязательное поле
 
