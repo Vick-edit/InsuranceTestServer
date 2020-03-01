@@ -19,8 +19,8 @@ namespace ServiceCore.Settings
         {
             container.Register<IDbContextFactory, DbContextFactory>();
 
-            container.Collection.Register(typeof(INameValidator));
-            container.Collection.Register(typeof(IDescriptionValidator));
+            container.Collection.Register(typeof(INameValidator), typeof(INameValidator).Assembly);
+            container.Collection.Register(typeof(IDescriptionValidator), typeof(INameValidator).Assembly);
 
             lock (ContainerLock)
             {

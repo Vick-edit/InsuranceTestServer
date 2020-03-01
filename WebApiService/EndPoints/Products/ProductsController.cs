@@ -39,8 +39,9 @@ namespace WebApiService.EndPoints.Products
         }
 
        
-        [Authorize, UserOddId]
         [HttpPost]
+        [Authorize, UserOddId]
+        [ProductValidationFilter]
         public async Task<ActionResult<Product>> Post([FromBody]ProductInputViewModel inputProductViewModel)
         {
             using (var dbContext = _dbContextFactory.GetApplicationContext())
@@ -53,6 +54,8 @@ namespace WebApiService.EndPoints.Products
 
                 return newProduct;
             }
+
+            this.ValidationProblem();
         }
     }
 }

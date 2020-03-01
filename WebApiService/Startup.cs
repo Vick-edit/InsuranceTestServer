@@ -90,6 +90,7 @@ namespace WebApiService
                         .Settings(interval: TimeSpan.FromSeconds(15)));
                 }
             });
+            services.AddSingleton(_container);
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -133,6 +134,8 @@ namespace WebApiService
         {
             container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
             DISettings.RegisterDependencies(container);
+
+            container.Register<ProductValidationFilter>();
 
             container.Verify();
         }
