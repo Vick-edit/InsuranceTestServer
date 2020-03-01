@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiService", "WebApiServ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceCore", "ServiceCore\ServiceCore.csproj", "{A3373341-DECF-4482-8531-C4FCB8FA3348}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceCore.Tests", "ServiceCore.Tests\ServiceCore.Tests.csproj", "{C25B3011-7F89-45A6-9690-9F30F3154E12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiService.Tests", "ServiceCore.Tests\WebApiService.Tests.csproj", "{C25B3011-7F89-45A6-9690-9F30F3154E12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

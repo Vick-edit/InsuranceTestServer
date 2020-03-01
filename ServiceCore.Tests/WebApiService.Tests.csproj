@@ -1,9 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <AssemblyName>WebApiService.Tests</AssemblyName>
+
+    <RootNamespace>WebApiService.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +19,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="SimpleInjector" Version="4.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebApiService\WebApiService.csproj" />
   </ItemGroup>
 
 </Project>

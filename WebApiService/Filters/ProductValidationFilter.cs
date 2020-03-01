@@ -14,10 +14,10 @@ namespace WebApiService.Filters
     /// </summary>
     public class ProductValidationFilter : IAsyncActionFilter
     {
-        private readonly IEnumerable<INameValidator> NameValidators;
-        private readonly IEnumerable<IDescriptionValidator> DescriptionValidators;
+        private readonly IList<INameValidator> NameValidators;
+        private readonly IList<IDescriptionValidator> DescriptionValidators;
 
-        public ProductValidationFilter(IEnumerable<INameValidator> nameValidators, IEnumerable<IDescriptionValidator> descriptionValidators)
+        public ProductValidationFilter(IList<INameValidator> nameValidators, IList<IDescriptionValidator> descriptionValidators)
         {
             NameValidators = nameValidators;
             DescriptionValidators = descriptionValidators;
@@ -38,15 +38,21 @@ namespace WebApiService.Filters
                 return;
             }
 
-            var nameValidations = NameValidators.Select(v => v.ValidateAsync(productParam.Name));
-            var isNameValidChecks = await Task.WhenAll(nameValidations);
-            if (isNameValidChecks.Any(v => !v))
-                context.ModelState.AddModelError(nameof(Product.Name), "Имя продукта не прошло дополнительные проверки");
+            if (NameValidators.Any())
+            {
+                var nameValidations = NameValidators.Select(v => v.ValidateAsync(productParam.Name));
+                var isNameValidChecks = await Task.WhenAll(nameValidations);
+                if (isNameValidChecks.Any(v => !v))
+                    context.ModelState.AddModelError(nameof(Product.Name), "Имя продукта не прошло дополнительные проверки");
+            }
 
-            var descriptionValidations = DescriptionValidators.Select(v => v.ValidateAsync(productParam.Description));
-            var isDescriptionValidChecks = await Task.WhenAll(descriptionValidations);
-            if (isDescriptionValidChecks.Any(v => !v))
-                context.ModelState.AddModelError(nameof(Product.Description), "Описание продукта не прошло дополнительные проверки");
+            if (DescriptionValidators.Any())
+            {
+                var descriptionValidations = DescriptionValidators.Select(v => v.ValidateAsync(productParam.Description));
+                var isDescriptionValidChecks = await Task.WhenAll(descriptionValidations);
+                if (isDescriptionValidChecks.Any(v => !v)) 
+                    context.ModelState.AddModelError(nameof(Product.Description), "Описание продукта не прошло дополнительные проверки");
+            }
 
             if (!context.ModelState.IsValid)
             {
