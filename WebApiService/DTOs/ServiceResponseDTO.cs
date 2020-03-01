@@ -1,6 +1,5 @@
 ﻿using System;
 using Newtonsoft.Json;
-using ServiceCore.Domain.Models;
 
 namespace WebApiService.DTOs
 {
